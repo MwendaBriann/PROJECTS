@@ -1,0 +1,438 @@
+public class Car {
+    private String licensePlate;
+    private String model;
+    private boolean rented;
+    private boolean inMaintenance;
+
+    public Car(String licensePlate, String model) {
+        this.licensePlate = licensePlate;
+        this.model = model;
+        this.rented = false;
+        this.inMaintenance = false;
+    }
+
+    public String getLicensePlate() {
+        return licensePlate;
+    }
+
+    public String getModel() {
+        return model;
+    }
+
+    public boolean isRented() {
+        return rented;
+    }
+
+    public void setRented(boolean rented) {
+        this.rented = rented;
+    }
+
+    public boolean isInMaintenance() {
+        return inMaintenance;
+    }
+
+    public void setInMaintenance(boolean inMaintenance) {
+        this.inMaintenance = inMaintenance;
+    }
+
+    @Override
+    public String toString() {
+        return "Car{" +
+                "licensePlate='" + licensePlate + '\'' +
+                ", model='" + model + '\'' +
+                ", rented=" + rented +
+                ", inMaintenance=" + inMaintenance +
+                '}';
+    }
+}
+public class Person {
+    public static class Customer {
+        private String id;
+        private String name;
+        private String phoneNumber;
+
+        public Customer(String id, String name, String phoneNumber) {
+            this.id = id;
+            this.name = name;
+            this.phoneNumber = phoneNumber;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getPhoneNumber() {
+            return phoneNumber;
+        }
+
+        public String getCustomerDetails() {
+            return "Customer{" +
+                    "id='" + id + '\'' +
+                    ", name='" + name + '\'' +
+                    ", phoneNumber='" + phoneNumber + '\'' +
+                    '}';
+        }
+    }
+
+    public static class Employee {
+        private String id;
+        private String name;
+        private String phoneNumber;
+        private String position;
+
+        public Employee(String id, String name, String phoneNumber, String position) {
+            this.id = id;
+            this.name = name;
+            this.phoneNumber = phoneNumber;
+            this.position = position;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getPhoneNumber() {
+            return phoneNumber;
+        }
+
+        public String getPosition() {
+            return position;
+        }
+
+        public String getEmployeeDetails() {
+            return "Employee{" +
+                    "id='" + id + '\'' +
+                    ", name='" + name + '\'' +
+                    ", phoneNumber='" + phoneNumber + '\'' +
+                    ", position='" + position + '\'' +
+                    '}';
+        }
+    }
+}
+import java.time.LocalDate;
+
+public class RentalTransaction {
+    private String transactionId;
+    private Car car;
+    private Person.Customer customer;
+    private LocalDate rentalDate;
+    private LocalDate returnDate;
+
+    public RentalTransaction(String transactionId, Car car, Person.Customer customer, LocalDate rentalDate) {
+        this.transactionId = transactionId;
+        this.car = car;
+        this.customer = customer;
+        this.rentalDate = rentalDate;
+        this.returnDate = null;
+    }
+
+    public String getTransactionId() {
+        return transactionId;
+    }
+
+    public Car getCar() {
+        return car;
+    }
+
+    public Person.Customer getCustomer() {
+        return customer;
+    }
+
+    public LocalDate getRentalDate() {
+        return rentalDate;
+    }
+
+    public LocalDate getReturnDate() {
+        return returnDate;
+    }
+
+    public void setReturnDate(LocalDate returnDate) {
+        this.returnDate = returnDate;
+    }
+}
+import java.util.*;
+import java.time.LocalDate;
+
+public class RentalAgency {
+
+    private List<Car> cars;
+    private Map<String, Person.Customer> customers;
+    private List<RentalTransaction> transactions;
+    private Map<String, Person.Employee> employees;
+
+    public RentalAgency() {
+        cars = new ArrayList<>();
+        customers = new HashMap<>();
+        transactions = new ArrayList<>();
+        employees = new HashMap<>();
+    }
+
+    public void addCar(Car car) {
+        cars.add(car);
+    }
+
+    public void addCustomer(Person.Customer customer) {
+        customers.put(customer.getId(), customer);
+    }
+
+    public void addEmployee(Person.Employee employee) {
+        employees.put(employee.getId(), employee);
+    }
+
+    public Car findCar(String licensePlate) {
+        for (Car car : cars) {
+            if (car.getLicensePlate().equals(licensePlate)) {
+                return car;
+            }
+        }
+        return null;
+    }
+
+    public Person.Customer findCustomer(String customerId) {
+        return customers.get(customerId);
+    }
+
+    public Person.Employee findEmployee(String employeeId) {
+        return employees.get(employeeId);
+    }
+
+    public void listCustomers() {
+        System.out.println("\nCustomers:");
+        for (Person.Customer customer : customers.values()) {
+            System.out.println(customer.getCustomerDetails());
+        }
+    }
+
+    public boolean rentCar(String licensePlate, String customerId) {
+        Car car = findCar(licensePlate);
+        Person.Customer customer = findCustomer(customerId);
+        if (car == null) {
+            System.out.println("Car not found with license plate: " + licensePlate);
+            return false;
+        }
+        if (customer == null) {
+            System.out.println("Customer not found with ID: " + customerId);
+            return false;
+        }
+        if (car.isRented()) {
+            System.out.println("Car with license plate " + licensePlate + " is already rented.");
+            return false;
+        }
+        if (car.isInMaintenance()) {
+            System.out.println("Car with license plate " + licensePlate + " is currently under maintenance.");
+            return false;
+        }
+
+        car.setRented(true);
+        RentalTransaction transaction = new RentalTransaction(
+                "TX" + (transactions.size() + 1), car, customer, LocalDate.now());
+        transactions.add(transaction);
+        System.out.println("Rented car " + car.getLicensePlate() + " to customer " + customer.getId());
+        return true;
+    }
+
+    public boolean returnCar(String licensePlate) {
+        Car car = findCar(licensePlate);
+        if (car == null) {
+            System.out.println("Car not found with license plate: " + licensePlate);
+            return false;
+        }
+        if (!car.isRented()) {
+            System.out.println("Car with license plate " + licensePlate + " is not currently rented.");
+            return false;
+        }
+
+        car.setRented(false);
+        for (RentalTransaction transaction : transactions) {
+            if (transaction.getCar().getLicensePlate().equals(licensePlate)
+                    && transaction.getReturnDate() == null) {
+                transaction.setReturnDate(LocalDate.now());
+                System.out.println("Returned car " + car.getLicensePlate());
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void startMaintenance(String licensePlate) {
+        Car car = findCar(licensePlate);
+        if (car != null) {
+            if (!car.isRented() && !car.isInMaintenance()) {
+                car.setInMaintenance(true);
+                System.out.println("Car " + licensePlate + " is now under maintenance.");
+            } else {
+                System.out.println("Car " + licensePlate + " is either rented or already under maintenance.");
+            }
+        } else {
+            System.out.println("Car not found with license plate: " + licensePlate);
+        }
+    }
+
+    public void completeMaintenance(String licensePlate) {
+        Car car = findCar(licensePlate);
+        if (car != null && car.isInMaintenance()) {
+            car.setInMaintenance(false);
+            System.out.println("Maintenance completed for car " + licensePlate);
+        } else {
+            System.out.println("Car not found or not under maintenance with license plate: " + licensePlate);
+        }
+    }
+
+    public void displayAllVehicles() {
+        System.out.println("\nAll Vehicles:");
+        for (Car car : cars) {
+            System.out.println(car);
+        }
+    }
+
+    public List<Car> getAvailableCars() {
+        List<Car> availableCars = new ArrayList<>();
+        for (Car car : cars) {
+            if (!car.isRented() && !car.isInMaintenance()) {
+                availableCars.add(car);
+            }
+        }
+        return availableCars;
+    }
+
+    public void printAvailableCars() {
+        List<Car> availableCars = getAvailableCars();
+        System.out.println("\nAvailable Cars:");
+        if (availableCars.isEmpty()) {
+            System.out.println("No cars available for rent.");
+        } else {
+            for (Car car : availableCars) {
+                System.out.println(car);
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        RentalAgency agency = new RentalAgency();
+        Scanner sc = new Scanner(System.in);
+        int choice;
+
+        // Pre-populate with some data for testing
+        Car car1 = new Car("KDM 001", "Toyota Mark X");
+        Car car2 = new Car("KDQ 002", "Mercedes C200");
+        agency.addCar(car1);
+        agency.addCar(car2);
+
+        Person.Customer customer1 = new Person.Customer("001", "Brian Mwenda", "0700555642");
+        Person.Customer customer2 = new Person.Customer("002", "Don Mwangi", "0736445527");
+        agency.addCustomer(customer1);
+        agency.addCustomer(customer2);
+
+        Person.Employee
+           Person.Employee employee1 = new Person.Employee("001", "Vincent Murimi", "0700785642", "Manager");
+           Person.Employee employee2 = new Person.Employee("002", "Alex Mugambi", "0722334477", "Clerk");
+           agency.addEmployee(employee1);
+           agency.addEmployee(employee2);
+
+           do {
+               System.out.println("\n**** ThriftyRent SYSTEM MENU ****\n");
+               System.out.println("Add vehicle:            1");
+               System.out.println("Rent vehicle:           2");
+               System.out.println("Return vehicle:         3");
+               System.out.println("Vehicle Maintenance:    4");
+               System.out.println("Complete Maintenance:   5");
+               System.out.println("Display All Vehicles:   6");
+               System.out.println("Add Customer:           7");
+               System.out.println("Find Customer:          8");
+               System.out.println("List All Customers:     9");
+               System.out.println("Exit Program:           10");
+               System.out.println("Enter your choice:");
+
+               choice = sc.nextInt();
+               sc.nextLine();  // consume the newline
+
+               switch (choice) {
+                   case 1:
+                       System.out.println("Enter license plate:");
+                       String licensePlate = sc.nextLine();
+                       System.out.println("Enter model:");
+                       String model = sc.nextLine();
+                       Car newCar = new Car(licensePlate, model);
+                       agency.addCar(newCar);
+                       System.out.println("Vehicle added: " + newCar);
+                       break;
+
+                   case 2:
+                       System.out.println("Enter license plate of the car to rent:");
+                       String rentLicensePlate = sc.nextLine();
+                       System.out.println("Enter customer ID:");
+                       String customerId = sc.nextLine();
+                       agency.rentCar(rentLicensePlate, customerId);
+                       break;
+
+                   case 3:
+                       System.out.println("Enter license plate of the car to return:");
+                       String returnLicensePlate = sc.nextLine();
+                       agency.returnCar(returnLicensePlate);
+                       break;
+
+                   case 4:
+                       System.out.println("Enter license plate of the car for maintenance:");
+                       String maintenanceLicensePlate = sc.nextLine();
+                       agency.startMaintenance(maintenanceLicensePlate);
+                       break;
+
+                   case 5:
+                       System.out.println("Enter license plate of the car to complete maintenance:");
+                       String completeMaintenanceLicensePlate = sc.nextLine();
+                       agency.completeMaintenance(completeMaintenanceLicensePlate);
+                       break;
+
+                   case 6:
+                       agency.displayAllVehicles();
+                       break;
+
+                   case 7:
+                       System.out.println("Enter customer ID:");
+                       String newCustomerId = sc.nextLine();
+                       System.out.println("Enter customer name:");
+                       String newCustomerName = sc.nextLine();
+                       System.out.println("Enter customer phone number:");
+                       String newCustomerPhoneNumber = sc.nextLine();
+                       Person.Customer newCustomer = new Person.Customer(newCustomerId, newCustomerName, newCustomerPhoneNumber);
+                       agency.addCustomer(newCustomer);
+                       System.out.println("Customer added: " + newCustomer.getCustomerDetails());
+                       break;
+
+                   case 8:
+                       System.out.println("Enter customer ID to find:");
+                       String findCustomerId = sc.nextLine();
+                       Person.Customer foundCustomer = agency.findCustomer(findCustomerId);
+                       if (foundCustomer != null) {
+                           System.out.println("Customer found: " + foundCustomer.getCustomerDetails());
+                       } else {
+                           System.out.println("Customer not found with ID: " + findCustomerId);
+                       }
+                       break;
+
+                   case 9:
+                       agency.listCustomers();
+                       break;
+
+                   case 10:
+                       System.out.println("Exiting program...");
+                       break;
+
+                   default:
+                       System.out.println("Invalid choice. Please try again.");
+                       break;
+               }
+           } while (choice != 10);
+
+           sc.close();
+       }
+   }
+ 
